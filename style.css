@@ -4,7 +4,7 @@
 
 
 .container {
-    background-color: rgb(231, 236, 240);
+    /* background-color: rgb(231, 236, 240); */
 
     display: grid;
     grid-template-columns: 320px 200px;
