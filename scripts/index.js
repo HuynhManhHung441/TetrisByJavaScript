@@ -178,6 +178,12 @@ const BRICK_LAYOUT = [
       ],
 ];
 
+const KEY_CODES = {
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+  DOWN: 'ArrowDown',
+  UP: 'ArrowUp',
+};
 
 const WHITE_COLOR_ID = 7;
 
@@ -244,27 +250,45 @@ class Brick {
     }
 
     moveLeft () {
-      this.clear();
-      this.colPos--;
-      this.draw();
+      if (!this.checkCollision(this.rowPos, this.colPos - 1, this.layout[this.activeIndex])) {
+        this.clear();
+        this.colPos--;
+        this.draw();
+      }
     }
 
     moveRight () {
-      this.clear();
-      this.colPos++;
-      this.draw();
+      if (!this.checkCollision(this.rowPos, this.colPos + 1, this.layout[this.activeIndex])) {
+        this.clear();
+        this.colPos++;
+        this.draw();
+      }
     }
 
     moveDown () { 
-      this.clear();
-      this.rowPos++;
-      this.draw();
+      if (!this.checkCollision(this.rowPos + 1, this.colPos, this.layout[this.activeIndex])) {
+        this.clear();
+        this.rowPos++;
+        this.draw();
+      }
     }
 
     rotate () {
-      this.clear();
-      this.activeIndex = (this.activeIndex + 1) % 4;
-      this.draw();
+      if (!this.checkCollision(this.rowPos, this.colPos, this.layout[(this.activeIndex + 1) % 4])) {
+        this.clear();
+        this.activeIndex = (this.activeIndex + 1) % 4;
+        this.draw();
+      }
+    }
+
+    checkCollision (nextRow, nextCol, nextLayout) {
+      for (let row = 0; row < nextLayout.length; row++) {
+        for (let col = 0; col < nextLayout[row].length; col++) {
+            if (nextLayout[row][col] !== WHITE_COLOR_ID) {
+              if ((col + nextCol < 0)||(col + nextCol >= COLS)||(row + nextRow >=ROWS)) return true;
+            }
+        }
+    }
     }
 }
 
@@ -279,8 +303,25 @@ brick.moveRight();
 brick.moveDown();
 brick.rotate();
 
-// brick = new Brick(3, 6, 3);
-// brick.draw();
+document.addEventListener('keydown', (e) => {
+  console.log({e});
+  switch (e.code) {
+    case KEY_CODES.LEFT:
+      brick.moveLeft();
+      break;
+    case KEY_CODES.RIGHT:
+      brick.moveRight();
+      break;
+    case KEY_CODES.DOWN:
+      brick.moveDown();
+      break;
+    case KEY_CODES.UP:
+      brick.rotate();
+      break;
+    default:
+      break;
+  }
+});
 
 
 console.table(board.grid);
