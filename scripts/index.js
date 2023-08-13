@@ -197,6 +197,19 @@ class Board {
     constructor(ctx){
         this.ctx = ctx;
         this.grid = this.generateWhiteBoard();
+        this.score = 0;
+        this.gameOver = false;
+        this.isPlaying = false;
+        this.addedScore = 0;
+    }
+
+    reset() {
+      this.score = 0;
+      this.addedScore = 0;
+      this.gameOver = false;
+      this.grid = this.generateWhiteBoard();
+      this.drawBoard();
+      document.getElementById('score').innerHTML = this.score;
     }
 
     generateWhiteBoard(){
@@ -225,10 +238,24 @@ class Board {
 
       const newScore = ROWS - latestGrid.length;
       const newRows = Array.from({length: newScore}, ()=>Array(COLS).fill(WHITE_COLOR_ID));
+      if (newScore) {
+        board.grid = [...newRows, ...latestGrid];
+        this.addedScore = newScore * 10;
+        this.handleScore();
+        console.log({latestGrid});
+      }
+      
+    }
 
-      board.grid = [...newRows, ...latestGrid];
+    handleScore() {
+      this.score += this.addedScore; 
+      document.getElementById('score').innerHTML = this.score;
+    }
 
-      console.log({latestGrid});
+    handleGameOver() {
+      this.gameOver = true;
+      this.isPlaying = false;
+      alert("Game Over!!!");
     }
 }
 
@@ -239,7 +266,7 @@ class Brick {
         this.layout = BRICK_LAYOUT[id];
         this.activeIndex = 0;
         this.colPos = 3;
-        this.rowPos = 0;
+        this.rowPos = -2;
     }
 
     draw() {
@@ -286,8 +313,9 @@ class Brick {
         return;
       }
       this.handleLanded();
-      generateNewBrick();
-
+      if (!board.gameOver) {
+        generateNewBrick();
+      }
     }
 
     rotate () {
@@ -301,7 +329,7 @@ class Brick {
     checkCollision (nextRow, nextCol, nextLayout) {
       for (let row = 0; row < nextLayout.length; row++) {
         for (let col = 0; col < nextLayout[row].length; col++) {
-            if (nextLayout[row][col] !== WHITE_COLOR_ID) {
+            if (nextLayout[row][col] !== WHITE_COLOR_ID && nextRow >= 0) {
               if ((col + nextCol < 0)||
                   (col + nextCol >= COLS)||
                   (row + nextRow >=ROWS)||
@@ -312,7 +340,12 @@ class Brick {
         }
       }
     }
+
     handleLanded () {
+      if (this.rowPos <= 0) {
+        board.handleGameOver();
+        return;
+      }
       for (let row = 0; row < this.layout[this.activeIndex].length; row++) {
         for (let col = 0; col < this.layout[this.activeIndex][row].length; col++) {
             if (this.layout[this.activeIndex][row][col] !== WHITE_COLOR_ID) {
@@ -323,6 +356,8 @@ class Brick {
       board.handleCompleteRows();
       board.drawBoard();
     }
+
+    
 }
 
 
@@ -332,31 +367,42 @@ function generateNewBrick() {
 
 board = new Board(ctx);
 board.drawBoard();
-// brick = new Brick(0);
-generateNewBrick();
-brick.draw();
 
-setInterval(() => {
-  brick.moveDown();
-}, 1000);
+document.getElementById('play').addEventListener('click', () => {
+  board.reset();
+  board.isPlaying = true;
+  generateNewBrick();
+
+  const refresh = setInterval(() => {
+    if (!board.gameOver){
+      brick.moveDown();
+    } else {
+      clearInterval(refresh);
+    }
+  }, 1000);
+  console.log(board.score, board.addedScore);
+});
+
 
 document.addEventListener('keydown', (e) => {
-  console.log({e});
-  switch (e.code) {
-    case KEY_CODES.LEFT:
-      brick.moveLeft();
-      break;
-    case KEY_CODES.RIGHT:
-      brick.moveRight();
-      break;
-    case KEY_CODES.DOWN:
-      brick.moveDown();
-      break;
-    case KEY_CODES.UP:
-      brick.rotate();
-      break;
-    default:
-      break;
+  if (!board.gameOver && board.isPlaying) {
+    console.log({e});
+    switch (e.code) {
+      case KEY_CODES.LEFT:
+        brick.moveLeft();
+        break;
+      case KEY_CODES.RIGHT:
+        brick.moveRight();
+        break;
+      case KEY_CODES.DOWN:
+        brick.moveDown();
+        break;
+      case KEY_CODES.UP:
+        brick.rotate();
+        break;
+      default:
+        break;
+    }
   }
 });
 
