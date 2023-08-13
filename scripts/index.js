@@ -1,6 +1,6 @@
 /*** CONSTANT ***/
 const COLS = 10;
-const ROWS = 20;
+const ROWS = 22;
 const BLOCK_SIZE = 30;
 const COLOR_MAPPING = [
     'red',
@@ -128,30 +128,10 @@ const BRICK_LAYOUT = [
           [7, 1, 7, 7],
         ],
       ],
-      [
+      [ 
         [
-          [7, 7, 7, 7],
-          [7, 1, 1, 7],
-          [7, 1, 1, 7],
-          [7, 7, 7, 7],
-        ],
-        [
-          [7, 7, 7, 7],
-          [7, 1, 1, 7],
-          [7, 1, 1, 7],
-          [7, 7, 7, 7],
-        ],
-        [
-          [7, 7, 7, 7],
-          [7, 1, 1, 7],
-          [7, 1, 1, 7],
-          [7, 7, 7, 7],
-        ],
-        [
-          [7, 7, 7, 7],
-          [7, 1, 1, 7],
-          [7, 1, 1, 7],
-          [7, 7, 7, 7],
+          [1, 1],
+          [1, 1],
         ],
       ],
       [
@@ -201,6 +181,8 @@ class Board {
         this.gameOver = false;
         this.isPlaying = false;
         this.addedScore = 0;
+
+        this.clearAudio = new Audio('../sounds/clear.wav');
     }
 
     reset() {
@@ -242,7 +224,9 @@ class Board {
         board.grid = [...newRows, ...latestGrid];
         this.addedScore = newScore * 10;
         this.handleScore();
-        console.log({latestGrid});
+        this.clearAudio.volume = 1.0;
+        this.clearAudio.play();
+        // console.log({latestGrid});
       }
       
     }
@@ -266,7 +250,7 @@ class Brick {
         this.layout = BRICK_LAYOUT[id];
         this.activeIndex = 0;
         this.colPos = 3;
-        this.rowPos = -2;
+        this.rowPos = 0;
     }
 
     draw() {
@@ -368,10 +352,12 @@ function generateNewBrick() {
 board = new Board(ctx);
 board.drawBoard();
 
+
 document.getElementById('play').addEventListener('click', () => {
   board.reset();
   board.isPlaying = true;
   generateNewBrick();
+  brick.draw();
 
   const refresh = setInterval(() => {
     if (!board.gameOver){
@@ -380,13 +366,13 @@ document.getElementById('play').addEventListener('click', () => {
       clearInterval(refresh);
     }
   }, 1000);
-  console.log(board.score, board.addedScore);
+  // console.log(board.score, board.addedScore);
 });
 
 
 document.addEventListener('keydown', (e) => {
   if (!board.gameOver && board.isPlaying) {
-    console.log({e});
+    // console.log({e});
     switch (e.code) {
       case KEY_CODES.LEFT:
         brick.moveLeft();
@@ -405,6 +391,3 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
-
-
-console.table(board.grid);
